@@ -1,14 +1,41 @@
 # coding = utf-8
-import os
-import time
-import sys
-import speedtest as st
-import pywifi
 import configparser
+import os
+import pywifi
+import sys
+import time
+import wmi
 
-# 分隔符
+import speedtest as st
+
+# Separator
 print('=' * 50)
-# 检测python版本
+
+
+# Get the login user_name
+def login_user():
+    user_name = os.getlogin()
+    return user_name
+
+
+print(f"计算机用户名：\033[33m{login_user()}\033[0m")
+
+# limit
+limit = {}
+for CS in wmi.WMI().Win32_ComputerSystem():
+    print(f"设备制造商：{CS.Manufacturer}")
+    limit['manufacture'] = str(CS.Manufacturer)
+    for m_word in limit.values():
+        if m_word == 'LENOVO':
+            print("\033[31mWRONGING:\033[0m 由于某些原因暂不支持该设备运行此程序！")
+            time.sleep(3)
+            exit()
+time.sleep(2)
+
+# Separator
+print('=' * 50)
+
+# Detect python version
 try:
     os.popen("python --version").readlines()
     if True:
@@ -17,34 +44,17 @@ try:
 except:
     print("python状态：\033[31m未安装或安装错误\033[0m")
 
-# 分隔符
+# Separator
 print('=' * 50)
 
 
-# 获取登录的用户名
-def login_user():
-    user_name = os.getlogin()
-    return user_name
-
-
-print(f"计算机用户名：\033[33m{login_user()}\033[0m")
-time.sleep(1)
-
-# 分隔符
-print('=' * 50)
-
-
-# 判断是否已经连接到WIFI
+# Judge whether it is connected to WIFI
 def gie():
-    # 创建一个无线对象
     wifi = pywifi.PyWiFi()
-    # 获取第一个无线网卡
     print("获取网卡中......")
     ifaces = wifi.interfaces()[0]
     time.sleep(2)
-    # 打印网卡的名称
     print(f"网卡名称：{ifaces.name()}")
-    # 打印网卡的连接状态  未连接：0  已连接：4
     if ifaces.status() == 4:
         print("网络状态：已连接到网络!")
     elif ifaces.status() == 0:
@@ -57,7 +67,7 @@ def gie():
 
 gie()
 
-# 检测pip源
+# Detect pip source
 print("正在检测您连接的pypi源......")
 conf = configparser.ConfigParser()
 path = f"C:/Users/{login_user()}/AppData/Roaming/pip/pip.ini"
@@ -69,11 +79,10 @@ if index_url == 'https://pypi.org/simple':
 else:
     print("当前pypi源：\\")
 
-# 开始测网速
 print("正在测试网速！！！请稍后......")
 
 
-# 转换速度单位
+# Convert speed units
 def speed_unit(bytes):
     unit = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
     i = 0
@@ -84,28 +93,29 @@ def speed_unit(bytes):
     return '%s %s' % (j, unit[i])
 
 
-spt = st.Speedtest()  # 调用Speedtest类
-download_speed = speed_unit(spt.download())  # 测试下载速度
+spt = st.Speedtest()
+download_speed = speed_unit(spt.download())
 print("您的当前下载网速为：", download_speed)
 
 
-# 更改pip源
+# Change pip source
 def change_pip():
     conf.set("global", "index_url", "https://pypi.tuna.tsinghua.edu.cn/simple")
     print("当前pypi源：清华源")
 
 
-# 判断是否换源
+# Determine whether to replace the source
 if spt.download() <= 524288000:
     print("当前网速较慢，将为你换源.....")
     change_pip()
 else:
     print(end='')
-# 分隔符
+
+# Separator
 print('=' * 50)
 
 
-# 开始检查并更新
+# Start checking and updating
 def pip_update():
     print("开始检查可以更新的库名......")
     model_ls = os.popen('pip list -o').readlines()
@@ -125,10 +135,11 @@ def pip_update():
 
 
 pip_update()
-# 分隔符
+
+# Separator
 print('=' * 50)
 
-# end
+# ended
 print("更新完毕，等待3秒后会自动关闭该窗口!")
 time.sleep(3)
 exit()
